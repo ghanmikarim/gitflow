@@ -19,3 +19,15 @@ Une fois tout cela validé, git flow va se charger de :
     merger la release avec develop
     supprimer la branche release/v0.1
     nous balancer sur la branche develop
+
+Hotfix !
+
+Nul n’est parfait… Il peut arriver d’avoir un bug en production qu’il faut absolument corriger. Pour cela, nous devons créer un Hotfix : git flow hotfix start bug. Faisons nos corrections, commitons git add, git commit -m "Correction du bug" puis on termine git flow hotfix finish bug. Ici, tout comme dans un finish release, on nous demandera de mettre un message pour le commit de la fusion avec master, une étiquette afin de tagger notre hotfix et enfin un message pour le commit de la fusion avec develop.
+
+Git Flow va donc :
+
+    merger notre hotfix avec master
+    tagger notre hotfix (avec l’étiquette que nous avons choisie)
+    merger le hotfix avec develop
+    supprimer la branche hotfix/bug
+    nous balancer sur la branche develop
