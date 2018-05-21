@@ -1,0 +1,21 @@
+Créons une nouvelle feature en tapant dans notre terminal git flow feature start main (où main est le nom de notre feature). Après l’éxecution de la commande, vous verrez des indications sur ce que Git Flow a fait. Il vient de créer la branche feature/main et nous a basculé dessus.
+
+Ajoutons un fichier index.html dans notre projet et ajoutons-y du HTML. Une fois cela fait on peut commiter : git add index.html et git commit -m "Ajout de la page principale". Si nous avons besoin de publier notre commit sur un serveur distant, nous pouvons utiliser la commande git flow feature publish main. Elle se chargera de créer la branche sur le serveur distant et de push notre commit. Afin de récupérer les données il suffit de faire un git pull sur la bonne branche comme nous en avions l’habitude avec Git.
+
+Une fois qu’on a terminé notre feature, il suffit de taper la commande git flow feature finish main. Git Flow va donc :
+
+    fusionner la branche feature/main avec develop
+    supprimer la branche feature/main en local et sur notre serveur
+    nous balancer sur la branche develop.
+
+	Nouvelle release
+
+Même principe que pour une feature, tapons la commande git flow release start v0.1 (par convention, on utilise un nom de version). A ce niveau, on peut changer le nom de la version dans nos fichiers readme.md, package.json, etc. Une fois qu’on a terminé avec nos vérifications, on fait un commit (git add puis git commit -m "Derniers correctifs") puis on termine (même principe que pour la feature) git flow release finish v0.1. Cette fois-ci, Git Flow va nous proposer de mettre un message pour le commit de la fusion avec master, une étiquette afin de taguer notre release et enfin un message pour le commit de la fusion avec develop.
+
+Une fois tout cela validé, git flow va se charger de :
+
+    merger notre release avec master
+    tagger notre release (avec l’étiquette que nous avons choisie)
+    merger la release avec develop
+    supprimer la branche release/v0.1
+    nous balancer sur la branche develop
