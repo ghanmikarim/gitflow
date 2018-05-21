@@ -1,0 +1,9 @@
+Créons une nouvelle feature en tapant dans notre terminal git flow feature start main (où main est le nom de notre feature). Après l’éxecution de la commande, vous verrez des indications sur ce que Git Flow a fait. Il vient de créer la branche feature/main et nous a basculé dessus.
+
+Ajoutons un fichier index.html dans notre projet et ajoutons-y du HTML. Une fois cela fait on peut commiter : git add index.html et git commit -m "Ajout de la page principale". Si nous avons besoin de publier notre commit sur un serveur distant, nous pouvons utiliser la commande git flow feature publish main. Elle se chargera de créer la branche sur le serveur distant et de push notre commit. Afin de récupérer les données il suffit de faire un git pull sur la bonne branche comme nous en avions l’habitude avec Git.
+
+Une fois qu’on a terminé notre feature, il suffit de taper la commande git flow feature finish main. Git Flow va donc :
+
+    fusionner la branche feature/main avec develop
+    supprimer la branche feature/main en local et sur notre serveur
+    nous balancer sur la branche develop.
