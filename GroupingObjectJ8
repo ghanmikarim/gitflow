@@ -1,0 +1,98 @@
+package dnc;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang.SerializationUtils;
+
+public class GroupProcessing {
+
+	public static void main(String[] args) {
+		Actor a1 = new Actor("A1", "Actor1");
+		Group a1_g1 = new Group("G1", "Groupe1");
+		Position a1_g1_f1 = new Position("F1", "Famille1");
+		Position a1_g1_f2 = new Position("F2", "Famille2");
+		PositionType a1_g1_f1_t1 = new PositionType("T1", "Typo1");
+		PositionType a1_g1_f1_t2 = new PositionType("T2", "Typo2");
+		PositionType a1_g1_f2_t3 = new PositionType("T3", "Typo3");
+		a1_g1_f1.setPositionType(Arrays.asList(a1_g1_f1_t1, a1_g1_f1_t2));
+		a1_g1_f2.setPositionType(Arrays.asList(a1_g1_f2_t3));
+		a1_g1.setPosition(Arrays.asList(a1_g1_f1, a1_g1_f2));
+		a1.setGroup(Arrays.asList(a1_g1));
+
+		Actor a2 = new Actor("A2", "Actor2");
+		Group a2_g1 = new Group("G1", "Group1");
+		Position a2_g1_f3 = new Position("F3", "Famille3");
+		Position a2_g1_f2 = new Position("F2", "Famille2");
+		PositionType a2_g1_f3_t4 = new PositionType("T4", "Typo4");
+		PositionType a2_g1_f2_t1 = new PositionType("T1", "Typo1");
+		a2_g1_f3.setPositionType(Arrays.asList(a2_g1_f3_t4));
+		a2_g1_f2.setPositionType(Arrays.asList(a2_g1_f2_t1));
+		a2_g1.setPosition(Arrays.asList(a2_g1_f3, a2_g1_f2));
+
+		Group a2_g2 = new Group("G2", "Group2");
+		Position a2_g2_f4 = new Position("F4", "Famille4");
+		Position a2_g2_f5 = new Position("F5", "Famille5");
+		Position a2_g2_f1 = new Position("F1", "Famille1");
+
+		PositionType a2_g2_f4_t1 = new PositionType("T1", "Typo1");
+		PositionType a2_g2_f4_t2 = new PositionType("T2", "Typo2");
+		a2_g2_f4.setPositionType(Arrays.asList(a2_g2_f4_t1, a2_g2_f4_t2));
+
+		PositionType a2_g2_f5_t3 = new PositionType("T3", "Typo3");
+		a2_g2_f5.setPositionType(Arrays.asList(a2_g2_f5_t3));
+
+		PositionType a2_g2_f1_t6 = new PositionType("T6", "Typo6");
+		a2_g2_f1.setPositionType(Arrays.asList(a2_g2_f1_t6));
+
+		a2_g2.setPosition(Arrays.asList(a2_g2_f4, a2_g2_f5, a2_g2_f1));
+
+		a2.setGroup(Arrays.asList(a2_g1, a2_g2));
+		new GroupProcessing().twoLevelGrouping(Arrays.asList(a1, a2));
+	}
+
+	// Utility function
+	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
+		Map<Object, Boolean> map = new ConcurrentHashMap<>();
+		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+	}
+
+	public void twoLevelGrouping(List<Actor> actors) {
+
+		final Map<String, List<Group>> groups = actors.stream().flatMap(actor -> actor.getGroup().stream()).collect(Collectors.groupingBy(Group::getId));
+		List<Group> distinctGroups = groups.entrySet().stream().flatMap(e1 -> e1.getValue().stream().map(e2 -> (Group) SerializationUtils.clone(e2))).collect(Collectors.toList())
+				.stream().filter(distinctByKey(p -> p.getId())).collect(Collectors.toList());
+		System.out.println("Groups: " + groups);
+		groups.forEach((String keyG, List<Group> allG) -> {
+			System.out.println(keyG);
+			Map<String, List<Position>> positions = allG.stream().flatMap(group -> group.getPosition().stream()).collect(Collectors.groupingBy(Position::getId));
+			System.out.println("Positions: " + positions);
+
+			List<Position> distinctPositions = positions.entrySet().stream().flatMap(e1 -> e1.getValue().stream().map(e2 -> (Position) SerializationUtils.clone(e2)))
+					.collect(Collectors.toList()).stream().filter(distinctByKey(p -> p.getId())).collect(Collectors.toList());
+			// System.out.println("distinctPositions: " + distinctPositions);
+			distinctGroups.stream().filter(group -> keyG.equals(group.getId())).findFirst().get().setPosition(distinctPositions);
+			positions.forEach((String keyP, List<Position> allP) -> {
+				System.out.println(keyP);
+				Map<String, List<PositionType>> positionsType = allP.stream().flatMap(pos -> pos.getPositionType().stream()).collect(Collectors.groupingBy(PositionType::getId));
+				List<PositionType> distinctPositionsType = positionsType.entrySet().stream()
+						.flatMap(e1 -> e1.getValue().stream().map(e2 -> (PositionType) SerializationUtils.clone(e2))).collect(Collectors.toList()).stream()
+						.filter(distinctByKey(p -> p.getId())).collect(Collectors.toList());
+				distinctPositions.stream().filter(pos -> keyP.equals(pos.getId())).findFirst().get().setPositionType(distinctPositionsType);
+
+				System.out.println("Typos: " + positionsType);
+				// System.out.println("distinctPositionsType: " + distinctPositionsType);
+			});
+		});
+
+		System.out.println("distinctGroups: " + distinctGroups);
+
+	}
+}
